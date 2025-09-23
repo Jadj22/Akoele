@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'colors.dart';
 
 class AppTheme {
@@ -21,11 +22,9 @@ class AppTheme {
       onError: AppColors.onError,
       errorContainer: AppColors.errorContainer,
       onErrorContainer: AppColors.onErrorContainer,
-      background: AppColors.background,
-      onBackground: AppColors.onBackground,
       surface: AppColors.surface,
       onSurface: AppColors.onSurface,
-      surfaceVariant: AppColors.surfaceVariant,
+      surfaceContainerHighest: AppColors.surfaceVariant,
       onSurfaceVariant: AppColors.onSurfaceVariant,
       outline: AppColors.outline,
       outlineVariant: AppColors.outline,
@@ -140,11 +139,9 @@ class AppTheme {
       onError: AppColors.onError,
       errorContainer: AppColors.errorContainer,
       onErrorContainer: AppColors.onErrorContainer,
-      background: AppColors.backgroundDark,
-      onBackground: AppColors.onBackgroundDark,
       surface: AppColors.surfaceDark,
       onSurface: AppColors.onSurfaceDark,
-      surfaceVariant: AppColors.surfaceVariantDark,
+      surfaceContainerHighest: AppColors.surfaceVariantDark,
       onSurfaceVariant: AppColors.onSurfaceVariantDark,
       outline: AppColors.outlineDark,
       outlineVariant: AppColors.outlineDark,
@@ -175,7 +172,7 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: colorScheme.primary,
           foregroundColor: colorScheme.onPrimary,
-          disabledBackgroundColor: colorScheme.surfaceVariant,
+          disabledBackgroundColor: colorScheme.surfaceContainerHighest,
           disabledForegroundColor: colorScheme.onSurfaceVariant,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -201,7 +198,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: colorScheme.surfaceVariant,
+        fillColor: colorScheme.surfaceContainerHighest,
         hintStyle: TextStyle(color: colorScheme.onSurfaceVariant),
         labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
         contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
@@ -252,15 +249,19 @@ class AppTheme {
         fontWeight: FontWeight.w400,
         color: scheme.onSurface,
       ),
-      displaySmall: TextStyle(
-        fontSize: 36,
-        fontWeight: FontWeight.w400,
-        color: scheme.onSurface,
+      displaySmall: GoogleFonts.oleoScriptSwashCaps(
+        textStyle: TextStyle(
+          fontSize: 36,
+          fontWeight: FontWeight.w400,
+          color: scheme.onSurface,
+        ),
       ),
-      headlineLarge: TextStyle(
-        fontSize: 32,
-        fontWeight: FontWeight.w600,
-        color: scheme.onSurface,
+      headlineLarge: GoogleFonts.oleoScriptSwashCaps(
+        textStyle: TextStyle(
+          fontSize: 32,
+          fontWeight: FontWeight.w600,
+          color: scheme.onSurface,
+        ),
       ),
       headlineMedium: TextStyle(
         fontSize: 28,
@@ -272,10 +273,12 @@ class AppTheme {
         fontWeight: FontWeight.w600,
         color: scheme.onSurface,
       ),
-      titleLarge: TextStyle(
-        fontSize: 22,
-        fontWeight: FontWeight.w600,
-        color: scheme.onSurface,
+      titleLarge: GoogleFonts.oleoScriptSwashCaps(
+        textStyle: TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.w600,
+          color: scheme.onSurface,
+        ),
       ),
       titleMedium: TextStyle(
         fontSize: 16,

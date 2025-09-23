@@ -1,23 +1,19 @@
 import 'package:flutter/material.dart';
-import 'register_screen.dart';
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+class PasswordForgetScreen extends StatefulWidget {
+  const PasswordForgetScreen({super.key});
 
   @override
-  State<LoginScreen> createState() => _LoginScreenState();
+  State<PasswordForgetScreen> createState() => _PasswordForgetScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _PasswordForgetScreenState extends State<PasswordForgetScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscure = true;
 
   @override
   void dispose() {
     _emailController.dispose();
-    _passwordController.dispose();
     super.dispose();
   }
 
@@ -33,28 +29,25 @@ class _LoginScreenState extends State<LoginScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Header brand bar
+              // Header
               Container(
                 padding: const EdgeInsets.fromLTRB(24, 28, 24, 28),
-                decoration: BoxDecoration(
-                  color: scheme.primary,
-                ),
+                color: scheme.primary,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      'Connexion',
+                      'Mot de passe oublié',
                       style: text.headlineLarge?.copyWith(
                         fontFamily: 'Oleo Script Swash Caps',
                         color: scheme.onPrimary,
                       ),
                     ),
-                    const SizedBox(height: 6),
                   ],
                 ),
               ),
 
-              // Form card
+              // Body
               Padding(
                 padding: const EdgeInsets.all(20),
                 child: Form(
@@ -72,16 +65,24 @@ class _LoginScreenState extends State<LoginScreen> {
                         focusedBorder: UnderlineInputBorder(
                           borderSide: BorderSide(color: scheme.onSurface, width: 1.5),
                         ),
-                        labelStyle: TextStyle(color: scheme.onSurface, fontStyle: FontStyle.italic, fontWeight: FontWeight.w700),
                         hintStyle: TextStyle(color: scheme.onSurface),
+                        labelStyle: TextStyle(color: scheme.onSurface, fontStyle: FontStyle.italic, fontWeight: FontWeight.w700),
                         contentPadding: const EdgeInsets.symmetric(vertical: 8),
                       ),
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const SizedBox(height: 12),
-                        // Email
+                        Text(
+                          'Saisissez votre mail pour recevoir un lien de réinitialisation',
+                          style: text.bodyLarge?.copyWith(
+                            color: scheme.onSurface,
+                            fontStyle: FontStyle.italic,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
                         Text('Email:', style: text.titleMedium?.copyWith(color: scheme.onSurface, fontStyle: FontStyle.italic, fontWeight: FontWeight.w700)),
                         TextFormField(
                           controller: _emailController,
@@ -93,23 +94,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             return ok ? null : 'Email invalide';
                           },
                         ),
-                        const SizedBox(height: 24),
-                        // Password
-                        Text('Mot de passe:', style: text.titleMedium?.copyWith(color: scheme.onSurface, fontStyle: FontStyle.italic, fontWeight: FontWeight.w700)),
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: _obscure,
-                          decoration: InputDecoration(
-                            suffixIcon: IconButton(
-                              onPressed: () => setState(() => _obscure = !_obscure),
-                              icon: Icon(_obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined, color: scheme.onSurfaceVariant),
-                            ),
-                          ),
-                          validator: (v) => (v == null || v.length < 6) ? '6 caractères minimum' : null,
-                        ),
 
                         const SizedBox(height: 40),
-                        // Primary login button centered, grey DDDDDD with black text
+                        // Se connecter button (primary, grey background as in mock)
                         Align(
                           alignment: Alignment.center,
                           child: SizedBox(
@@ -123,10 +110,11 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               onPressed: () {
                                 if (_formKey.currentState?.validate() ?? false) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Connexion...')),
-                                  ).closed.whenComplete(() {
-                                    Navigator.of(context).pushReplacementNamed('/home');
+                                  ScaffoldMessenger.of(context)
+                                      .showSnackBar(const SnackBar(content: Text('Lien envoyé')))
+                                      .closed
+                                      .whenComplete(() {
+                                    Navigator.of(context).pushReplacementNamed('/login');
                                   });
                                 }
                               },
@@ -144,7 +132,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             Expanded(child: Divider(color: scheme.onSurface)),
                             Padding(
                               padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                              child: Text('OU', style: TextStyle(color: scheme.onSurface)),
+                              child: Text('ou', style: TextStyle(color: scheme.onSurface)),
                             ),
                             Expanded(child: Divider(color: scheme.onSurface)),
                           ],
@@ -154,9 +142,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         Center(
                           child: TextButton(
                             onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const RegisterScreen()),
-                              );
+                              Navigator.of(context).pushNamed('/register');
                             },
                             child: Text(
                               "S’inscrire",

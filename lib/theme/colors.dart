@@ -1,28 +1,33 @@
 import 'package:flutter/material.dart';
 
 /// Centralized color tokens.
-/// Replace these hex values with the exact colors from Figma.
+/// Hex values extracted from Figma file (shared link):
+/// - Primary ramp (couleur primaire): #CC6600 (dark), #FF7F00 (base), #FFA540 (light)
+/// - Secondary ramp (couleur secondaire): #0077CC (blue), #FFD700 (yellow), #FFF9E6 (cream)
+/// - Status (couleur statut): success #22BB33, error #BB2124, warning #F0AD4E
 class AppColors {
   // Brand
-  static const Color primary = Color(0xFF0062FF); // TODO: replace with Figma Primary
+  static const Color primary = Color(0xFFFF7F00); // Figma: Rectangle base (couleur primaire)
   static const Color onPrimary = Color(0xFFFFFFFF);
-  static const Color primaryContainer = Color(0xFFD9E2FF);
-  static const Color onPrimaryContainer = Color(0xFF001A40);
+  static const Color primaryContainer = Color(0xFFFFA540); // lighter swatch from Figma primary
+  static const Color onPrimaryContainer = Color(0xFF1F1200);
 
-  static const Color secondary = Color(0xFF6B7280); // Neutral/secondary
+  // Secondary ramp seen in Figma (blue/yellow/cream). We use blue as secondary base.
+  static const Color secondary = Color(0xFF0077CC);
   static const Color onSecondary = Color(0xFFFFFFFF);
-  static const Color secondaryContainer = Color(0xFFE5E7EB);
+  static const Color secondaryContainer = Color(0xFFFFF9E6); // cream swatch from Figma
   static const Color onSecondaryContainer = Color(0xFF111827);
 
-  static const Color tertiary = Color(0xFF00C2A8);
-  static const Color onTertiary = Color(0xFF001A17);
-  static const Color tertiaryContainer = Color(0xFF9BF1E3);
-  static const Color onTertiaryContainer = Color(0xFF00201C);
+  // Tertiary mapped to success green from status ramp
+  static const Color tertiary = Color(0xFF22BB33);
+  static const Color onTertiary = Color(0xFFFFFFFF);
+  static const Color tertiaryContainer = Color(0xFFE6F7EA); // light green container
+  static const Color onTertiaryContainer = Color(0xFF0E3A14);
 
   // Error
-  static const Color error = Color(0xFFB00020);
+  static const Color error = Color(0xFFBB2124); // Figma status red
   static const Color onError = Color(0xFFFFFFFF);
-  static const Color errorContainer = Color(0xFFFCDADA);
+  static const Color errorContainer = Color(0xFFFAD7D7);
   static const Color onErrorContainer = Color(0xFF410002);
 
   // Background / Surface (Light)

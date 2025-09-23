@@ -1,8 +1,325 @@
 import 'package:flutter/material.dart';
 import 'theme/app_theme.dart';
+import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
+import 'screens/password_forget_screen.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 void main() {
   runApp(const MyApp());
+}
+
+/// Simple QR generator screen using qr_flutter
+class QrGeneratorScreen extends StatefulWidget {
+  const QrGeneratorScreen({super.key});
+
+  @override
+  State<QrGeneratorScreen> createState() => _QrGeneratorScreenState();
+}
+
+class _QrGeneratorScreenState extends State<QrGeneratorScreen> {
+  final _controller = TextEditingController(text: 'Akoele');
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Générer un QR'),
+        centerTitle: true,
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              TextField(
+                controller: _controller,
+                decoration: const InputDecoration(
+                  labelText: 'Contenu',
+                  hintText: 'Entrez le texte ou l’URL',
+                ),
+                onChanged: (_) => setState(() {}),
+              ),
+              const SizedBox(height: 24),
+              Expanded(
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: scheme.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: scheme.outline),
+                    ),
+                    child: QrImageView(
+                      data: _controller.text.isEmpty ? ' ' : _controller.text,
+                      version: QrVersions.auto,
+                      size: 220,
+                      backgroundColor: scheme.surface,
+                      eyeStyle: QrEyeStyle(eyeShape: QrEyeShape.square, color: scheme.onSurface),
+                      dataModuleStyle: QrDataModuleStyle(dataModuleShape: QrDataModuleShape.square, color: scheme.onSurface),
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () {},
+                  child: const Text('Partager / Enregistrer (à venir)'),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// HomeScreen with bottom navigation styled per interface mock
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _index = 0;
+  final MobileScannerController _scannerController = MobileScannerController(autoStart: false);
+  Barcode? _lastBarcode;
+  bool _torchOn = false;
+  bool _isScanning = false; // local mirrored state
+
+  @override
+  void initState() {
+    super.initState();
+    // keep local state in sync with controller
+    _scannerController.state.addListener(() {
+      final s = _scannerController.state.value;
+      if (s == MobileScannerState.started && !_isScanning) {
+        setState(() => _isScanning = true);
+      } else if (s != MobileScannerState.started && _isScanning) {
+        setState(() => _isScanning = false);
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _scannerController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final text = Theme.of(context).textTheme;
+
+    Widget buildScannerBody() {
+      return SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 8),
+              Text(
+                'Scanner pour vous enregistrer',
+                style: text.titleLarge?.copyWith(
+                  fontFamily: 'Oleo Script Swash Caps',
+                  color: scheme.onSurface,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              // Real scanner view
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: Stack(
+                    children: [
+                      MobileScanner(
+                        controller: _scannerController,
+                        onDetect: (capture) {
+                          final codes = capture.barcodes;
+                          if (codes.isNotEmpty) {
+                            setState(() => _lastBarcode = codes.first);
+                          }
+                        },
+                      ),
+                      // Simple focus frame overlay
+                      IgnorePointer(
+                        child: Center(
+                          child: Container(
+                            width: 220,
+                            height: 220,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: scheme.onSurface, width: 3),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: 260,
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                    backgroundColor: scheme.surfaceContainerHighest,
+                    foregroundColor: scheme.onSurface,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  ),
+                  onPressed: () async {
+                    if (_isScanning) {
+                      await _scannerController.stop();
+                    } else {
+                      await _scannerController.start();
+                    }
+                    // Listener will update _isScanning and UI
+                  },
+                  child: Text(
+                    _isScanning ? 'Arrêter' : 'Scanner',
+                    style: text.titleMedium?.copyWith(
+                      fontFamily: 'Oleo Script Swash Caps',
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+              if (_lastBarcode != null)
+                Text(
+                  'Dernier code: ${_lastBarcode!.displayValue ?? _lastBarcode!.rawValue ?? ''}',
+                  style: text.bodyMedium,
+                  textAlign: TextAlign.center,
+                ),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    tooltip: 'Torch',
+                    onPressed: () async {
+                      final v = await _scannerController.toggleTorch();
+                      setState(() => _torchOn = v == TorchState.on);
+                    },
+                    icon: Icon(_torchOn ? Icons.flash_on : Icons.flash_off),
+                  ),
+                  const SizedBox(width: 16),
+                  IconButton(
+                    tooltip: 'Inverser caméra',
+                    onPressed: () => _scannerController.switchCamera(),
+                    icon: const Icon(Icons.cameraswitch),
+                  ),
+                  const SizedBox(width: 16),
+                  OutlinedButton(
+                    onPressed: () => Navigator.of(context).pushNamed('/qr_generate'),
+                    child: const Text('Générer QR'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        ),
+      );
+    }
+
+    Widget body;
+    switch (_index) {
+      case 0:
+        body = buildScannerBody();
+        break;
+      case 1:
+        body = const Center(child: Text('Historique'));
+        break;
+      case 2:
+        body = const Center(child: Text('Favoris'));
+        break;
+      case 3:
+      default:
+        body = const Center(child: Text('Profil'));
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        centerTitle: true,
+        title: Text(
+          'Akoele',
+          style: text.headlineLarge?.copyWith(
+            fontFamily: 'Oleo Script Swash Caps',
+            color: scheme.primary,
+          ),
+        ),
+      ),
+      body: body,
+      bottomNavigationBar: ClipRRect(
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            color: scheme.primary,
+            border: Border(top: BorderSide(color: scheme.onSurface.withValues(alpha: 0.2))),
+          ),
+          child: SafeArea(
+            top: false,
+            child: BottomNavigationBar(
+              currentIndex: _index,
+              onTap: (i) => setState(() => _index = i),
+              backgroundColor: Colors.transparent,
+              type: BottomNavigationBarType.fixed,
+              selectedItemColor: scheme.onPrimary,
+              unselectedItemColor: scheme.onPrimary.withValues(alpha: 0.8),
+              showUnselectedLabels: true,
+              selectedLabelStyle: text.titleMedium?.copyWith(
+                fontFamily: 'Oleo Script Swash Caps',
+                color: scheme.onPrimary,
+              ),
+              unselectedLabelStyle: text.titleMedium?.copyWith(
+                fontFamily: 'Oleo Script Swash Caps',
+                color: scheme.onPrimary.withValues(alpha: 0.8),
+              ),
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.qr_code_scanner),
+                  label: 'Scanner',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.receipt_long),
+                  label: 'Historique',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.bookmark_border),
+                  label: 'Favoris',
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(Icons.account_circle_outlined),
+                  label: 'Profil',
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
@@ -10,12 +327,21 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    const bool isLoggedIn = false; // TODO: brancher la logique métier plus tard
     return MaterialApp(
-      title: 'Akoele Theme Demo',
+      title: 'Akoele',
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
-      home: const MyHomePage(title: 'Theme Samples'),
+      // Use named routes for clearer navigation and to avoid dead code warnings
+      initialRoute: isLoggedIn ? '/home' : '/login',
+      routes: {
+        '/login': (_) => const LoginScreen(),
+        '/register': (_) => const RegisterScreen(),
+        '/password_forget': (_) => const PasswordForgetScreen(),
+        '/home': (_) => const HomeScreen(),
+        '/qr_generate': (_) => const QrGeneratorScreen(),
+      },
     );
   }
 }
@@ -39,17 +365,14 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  void _showSnackBar() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('This is a themed SnackBar'),
+        behavior: SnackBarBehavior.floating,
+        action: SnackBarAction(label: 'OK', onPressed: () {}),
+      ),
+    );
   }
 
   @override
@@ -58,173 +381,68 @@ class _MyHomePageState extends State<MyHomePage> {
     final text = Theme.of(context).textTheme;
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        centerTitle: true,
+        title: Text(
+          widget.title,
+          style: text.headlineLarge?.copyWith(
+            fontFamily: 'Oleo Script Swash Caps',
+            color: scheme.primary,
+          ),
+        ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          // Text styles
-          Text('Text Styles', style: text.titleLarge),
-          const SizedBox(height: 8),
-          Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: scheme.surface,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: scheme.outline),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('displayLarge', style: text.displayLarge),
-                Text('displayMedium', style: text.displayMedium),
-                Text('displaySmall', style: text.displaySmall),
-                Text('headlineLarge', style: text.headlineLarge),
-                Text('headlineMedium', style: text.headlineMedium),
-                Text('headlineSmall', style: text.headlineSmall),
-                Text('titleLarge', style: text.titleLarge),
-                Text('titleMedium', style: text.titleMedium),
-                Text('titleSmall', style: text.titleSmall),
-                Text('bodyLarge', style: text.bodyLarge),
-                Text('bodyMedium', style: text.bodyMedium),
-                Text('bodySmall', style: text.bodySmall),
-                Text('labelLarge', style: text.labelLarge),
-                Text('labelMedium', style: text.labelMedium),
-                Text('labelSmall', style: text.labelSmall),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Buttons
-          Text('Buttons', style: text.titleLarge),
-          const SizedBox(height: 8),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Wrap(
-                spacing: 12,
-                runSpacing: 12,
-                children: [
-                  ElevatedButton(onPressed: () {}, child: const Text('Elevated')),
-                  FilledButton(onPressed: () {}, child: const Text('Filled')),
-                  OutlinedButton(onPressed: () {}, child: const Text('Outlined')),
-                  ElevatedButton(
-                    onPressed: null,
-                    child: const Text('Disabled'),
-                  ),
-                ],
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(height: 12),
+              Text(
+                'Learn. Grow. Achieve.',
+                style: text.titleMedium?.copyWith(color: scheme.onSurfaceVariant),
+                textAlign: TextAlign.center,
               ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Inputs
-          Text('Inputs', style: text.titleLarge),
-          const SizedBox(height: 8),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: const [
-                  TextField(decoration: InputDecoration(labelText: 'Label', hintText: 'Hint text')),
-                  SizedBox(height: 12),
-                  TextField(decoration: InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'Search')),
-                ],
+              const SizedBox(height: 32),
+              Text(
+                'Akoele',
+                style: text.displaySmall?.copyWith(
+                  fontFamily: 'Oleo Script Swash Caps',
+                  fontSize: 56,
+                  height: 1.1,
+                  color: scheme.primary,
+                  letterSpacing: 0.5,
+                ),
+                textAlign: TextAlign.center,
               ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Chips
-          Text('Chips', style: text.titleLarge),
-          const SizedBox(height: 8),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Wrap(
-                spacing: 8,
-                children: const [
-                  Chip(label: Text('Default')),
-                  Chip(avatar: CircleAvatar(child: Text('A')), label: Text('Avatar')),
-                  Chip(label: Text('Selected')),
-                ],
+              const SizedBox(height: 16),
+              Text(
+                'Your smart learning companion',
+                style: text.bodyLarge?.copyWith(color: scheme.onSurfaceVariant),
+                textAlign: TextAlign.center,
               ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Card & Colors
-          Text('Card & Colors', style: text.titleLarge),
-          const SizedBox(height: 8),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Primary', style: text.titleMedium?.copyWith(color: scheme.onPrimary)),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      _ColorSwatchBox(color: scheme.primary, label: 'primary'),
-                      _ColorSwatchBox(color: scheme.secondary, label: 'secondary'),
-                      _ColorSwatchBox(color: scheme.tertiary, label: 'tertiary'),
-                      _ColorSwatchBox(color: scheme.error, label: 'error'),
-                    ],
-                  ),
-                ],
+              const Spacer(),
+              SizedBox(
+                width: double.infinity,
+                child: FilledButton(
+                  onPressed: () {
+                    Navigator.of(context).pushNamed('/login');
+                  },
+                  child: const Text('Get Started'),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Counter demo (for state & FAB)
-          Text('Counter Demo', style: text.titleLarge),
-          const SizedBox(height: 8),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  Text('Count: ', style: text.titleMedium),
-                  Text('$_counter', style: text.headlineMedium),
-                ],
+              const SizedBox(height: 12),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton(
+                  onPressed: _showSnackBar,
+                  child: const Text('I already have an account'),
+                ),
               ),
-            ),
+            ],
           ),
-          const SizedBox(height: 80),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
+        ),
       ),
     );
   }
 }
-
-class _ColorSwatchBox extends StatelessWidget {
-  final Color color;
-  final String label;
-  const _ColorSwatchBox({required this.color, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    final on = ThemeData.estimateBrightnessForColor(color) == Brightness.dark
-        ? Colors.white
-        : Colors.black;
-    return Container(
-      width: 72,
-      height: 56,
-      margin: const EdgeInsets.only(right: 8),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      alignment: Alignment.center,
-      child: Text(label, style: TextStyle(color: on, fontWeight: FontWeight.w600)),
-    );
-  }
-}
+ 
