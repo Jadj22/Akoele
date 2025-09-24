@@ -3,6 +3,8 @@ import 'theme/app_theme.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/password_forget_screen.dart';
+import 'screens/form_screen.dart';
+import 'screens/historique_screen.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 
@@ -99,19 +101,24 @@ class _HomeScreenState extends State<HomeScreen> {
   Barcode? _lastBarcode;
   bool _torchOn = false;
   bool _isScanning = false; // local mirrored state
+  bool _navigatingToForm = false;
+  final List<Map<String, String>> _historyItems = [
+    {
+      'date': '2023-10-15 14:30',
+      'content': 'QR Code scanné: https://example.com',
+      'type': 'QR Scan'
+    },
+    {
+      'date': '2023-10-14 10:15',
+      'content': 'Formulaire soumis: John Doe, Visite entreprise',
+      'type': 'Form Submission'
+    },
+  ];
 
   @override
   void initState() {
     super.initState();
-    // keep local state in sync with controller
-    _scannerController.state.addListener(() {
-      final s = _scannerController.state.value;
-      if (s == MobileScannerState.started && !_isScanning) {
-        setState(() => _isScanning = true);
-      } else if (s != MobileScannerState.started && _isScanning) {
-        setState(() => _isScanning = false);
-      }
-    });
+    // Removed listener to deprecated controller.state; we'll manage _isScanning locally.
   }
 
   @override
@@ -152,8 +159,39 @@ class _HomeScreenState extends State<HomeScreen> {
                         controller: _scannerController,
                         onDetect: (capture) {
                           final codes = capture.barcodes;
-                          if (codes.isNotEmpty) {
+                          if (codes.isNotEmpty && !_navigatingToForm) {
+                            final value = codes.first.displayValue ?? codes.first.rawValue ?? '';
                             setState(() => _lastBarcode = codes.first);
+                            _navigatingToForm = true;
+                            _scannerController.stop();
+                            _isScanning = false;
+                            // Add to history
+                            setState(() {
+                              _historyItems.insert(0, {
+                                'date': DateTime.now().toString().substring(0, 16),
+                                'content': 'QR Code scanné: $value',
+                                'type': 'QR Scan'
+                              });
+                            });
+                            if (mounted) {
+                              Navigator.of(context).pushNamed(
+                                '/form',
+                                arguments: value,
+                              ).then((result) {
+                                // Handle form submission result
+                                if (result != null && result is Map<String, String>) {
+                                  setState(() {
+                                    _historyItems.insert(0, {
+                                      'date': DateTime.now().toString().substring(0, 16),
+                                      'content': 'Formulaire soumis: ${result['nom']}, ${result['objet']}',
+                                      'type': 'Form Submission'
+                                    });
+                                  });
+                                }
+                                // Allow scanning again when returning
+                                _navigatingToForm = false;
+                              });
+                            }
                           }
                         },
                       ),
@@ -187,10 +225,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   onPressed: () async {
                     if (_isScanning) {
                       await _scannerController.stop();
+                      if (mounted) setState(() => _isScanning = false);
                     } else {
                       await _scannerController.start();
+                      if (mounted) setState(() => _isScanning = true);
                     }
-                    // Listener will update _isScanning and UI
                   },
                   child: Text(
                     _isScanning ? 'Arrêter' : 'Scanner',
@@ -215,8 +254,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   IconButton(
                     tooltip: 'Torch',
                     onPressed: () async {
-                      final v = await _scannerController.toggleTorch();
-                      setState(() => _torchOn = v == TorchState.on);
+                      await _scannerController.toggleTorch();
+                      if (mounted) setState(() => _torchOn = !_torchOn);
                     },
                     icon: Icon(_torchOn ? Icons.flash_on : Icons.flash_off),
                   ),
@@ -234,6 +273,15 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
               const SizedBox(height: 16),
+              // Test button to open the form screen directly without scanning
+              SizedBox(
+                width: 260,
+                child: OutlinedButton(
+                  onPressed: () => Navigator.of(context).pushNamed('/form'),
+                  child: const Text('Ouvrir Formulaire (test)'),
+                ),
+              ),
+              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -246,7 +294,7 @@ class _HomeScreenState extends State<HomeScreen> {
         body = buildScannerBody();
         break;
       case 1:
-        body = const Center(child: Text('Historique'));
+        body = HistoriqueScreen(historyItems: _historyItems);
         break;
       case 2:
         body = const Center(child: Text('Favoris'));
@@ -276,7 +324,7 @@ class _HomeScreenState extends State<HomeScreen> {
         child: Container(
           decoration: BoxDecoration(
             color: scheme.primary,
-            border: Border(top: BorderSide(color: scheme.onSurface.withValues(alpha: 0.2))),
+            border: Border(top: BorderSide(color: scheme.onSurface.withOpacity(0.2))),
           ),
           child: SafeArea(
             top: false,
@@ -286,7 +334,7 @@ class _HomeScreenState extends State<HomeScreen> {
               backgroundColor: Colors.transparent,
               type: BottomNavigationBarType.fixed,
               selectedItemColor: scheme.onPrimary,
-              unselectedItemColor: scheme.onPrimary.withValues(alpha: 0.8),
+              unselectedItemColor: scheme.onPrimary.withOpacity(0.8),
               showUnselectedLabels: true,
               selectedLabelStyle: text.titleMedium?.copyWith(
                 fontFamily: 'Oleo Script Swash Caps',
@@ -294,7 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               unselectedLabelStyle: text.titleMedium?.copyWith(
                 fontFamily: 'Oleo Script Swash Caps',
-                color: scheme.onPrimary.withValues(alpha: 0.8),
+                color: scheme.onPrimary.withOpacity(0.8),
               ),
               items: const [
                 BottomNavigationBarItem(
@@ -341,6 +389,10 @@ class MyApp extends StatelessWidget {
         '/password_forget': (_) => const PasswordForgetScreen(),
         '/home': (_) => const HomeScreen(),
         '/qr_generate': (_) => const QrGeneratorScreen(),
+        '/form': (ctx) {
+          final arg = ModalRoute.of(ctx)?.settings.arguments as String?;
+          return FormScreen(scannedValue: arg);
+        },
       },
     );
   }
