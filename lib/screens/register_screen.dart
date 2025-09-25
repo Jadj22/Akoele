@@ -83,7 +83,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Nom:', style: text.titleMedium?.copyWith(color: scheme.onSurface, fontStyle: FontStyle.italic, fontWeight: FontWeight.w700)),
+                        Text('Nom *', style: text.titleMedium?.copyWith(color: scheme.onSurface, fontStyle: FontStyle.italic, fontWeight: FontWeight.w700)),
                         TextFormField(
                           controller: _lastNameController,
                           textInputAction: TextInputAction.next,
@@ -92,7 +92,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        Text('Prénom:', style: text.titleMedium?.copyWith(color: scheme.onSurface, fontStyle: FontStyle.italic, fontWeight: FontWeight.w700)),
+                        Text('Prénom *', style: text.titleMedium?.copyWith(color: scheme.onSurface, fontStyle: FontStyle.italic, fontWeight: FontWeight.w700)),
                         TextFormField(
                           controller: _firstNameController,
                           textInputAction: TextInputAction.next,
@@ -101,7 +101,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        Text('Email:', style: text.titleMedium?.copyWith(color: scheme.onSurface, fontStyle: FontStyle.italic, fontWeight: FontWeight.w700)),
+                        Text('Email *', style: text.titleMedium?.copyWith(color: scheme.onSurface, fontStyle: FontStyle.italic, fontWeight: FontWeight.w700)),
                         TextFormField(
                           controller: _emailController,
                           keyboardType: TextInputType.emailAddress,
@@ -115,7 +115,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        Text('Téléphone:', style: text.titleMedium?.copyWith(color: scheme.onSurface, fontStyle: FontStyle.italic, fontWeight: FontWeight.w700)),
+                        Text('Téléphone *', style: text.titleMedium?.copyWith(color: scheme.onSurface, fontStyle: FontStyle.italic, fontWeight: FontWeight.w700)),
                         TextFormField(
                           controller: _phoneController,
                           keyboardType: TextInputType.phone,
@@ -125,7 +125,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         ),
                         const SizedBox(height: 16),
 
-                        Text('Mot de passe:', style: text.titleMedium?.copyWith(color: scheme.onSurface, fontStyle: FontStyle.italic, fontWeight: FontWeight.w700)),
+                        Text('Mot de passe *', style: text.titleMedium?.copyWith(color: scheme.onSurface, fontStyle: FontStyle.italic, fontWeight: FontWeight.w700)),
                         TextFormField(
                           controller: _passwordController,
                           obscureText: _obscure,

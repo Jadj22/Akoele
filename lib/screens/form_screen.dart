@@ -76,62 +76,6 @@ class _FormScreenState extends State<FormScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: ClipRRect(
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(24),
-          topRight: Radius.circular(24),
-        ),
-        child: Container(
-          decoration: BoxDecoration(
-            color: scheme.primary,
-            border: Border(top: BorderSide(color: scheme.onSurface.withOpacity(0.2))),
-          ),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 10, 16, 6),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: TextButton(
-                      onPressed: () {
-                        if (_formKey.currentState?.validate() ?? false) {
-                          Navigator.of(context).pop({
-                            'nom': _nom.text,
-                            'prenom': _prenom.text,
-                            'contact': _contact.text,
-                            'societe': _societe.text,
-                            'objet': _objet.text,
-                          });
-                        }
-                      },
-                      style: TextButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        backgroundColor: const Color(0xFFEFEFEF),
-                        foregroundColor: Theme.of(context).colorScheme.onSurface,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          side: BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.25)),
-                        ),
-                      ),
-                      child: Text(
-                        'Confirmer',
-                        style: text.titleMedium?.copyWith(
-                          fontFamily: 'Oleo Script Swash Caps',
-                          fontSize: 20,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 12),
-              ],
-            ),
-          ),
-        ),
-      ),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -160,7 +104,6 @@ class _FormScreenState extends State<FormScreen> {
                 children: [
                   const SizedBox(height: 12),
                   _label(context, 'Nom', required: true),
-                  const SizedBox(height: 2),
                   const SizedBox(height: 2),
                   TextFormField(
                     controller: _nom,
@@ -192,7 +135,41 @@ class _FormScreenState extends State<FormScreen> {
                     decoration: const InputDecoration(),
                     validator: (v) => (v == null || v.trim().isEmpty) ? 'Champ requis' : null,
                   ),
-                  const SizedBox(height: 120),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () {
+                        if (_formKey.currentState?.validate() ?? false) {
+                          Navigator.of(context).pop({
+                            'nom': _nom.text,
+                            'prenom': _prenom.text,
+                            'contact': _contact.text,
+                            'societe': _societe.text,
+                            'objet': _objet.text,
+                          });
+                        }
+                      },
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        backgroundColor: const Color(0xFFEFEFEF),
+                        foregroundColor: Theme.of(context).colorScheme.onSurface,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: BorderSide(color: Theme.of(context).colorScheme.onSurface.withOpacity(0.25)),
+                        ),
+                      ),
+                      child: Text(
+                        'Confirmer que',
+                        style: text.titleMedium?.copyWith(
+                          fontFamily: 'Oleo Script Swash Caps',
+                          fontSize: 20,
+                          color: scheme.onSecondaryContainer,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
