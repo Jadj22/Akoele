@@ -15,14 +15,24 @@ class _FormScreenState extends State<FormScreen> {
   final _prenom = TextEditingController();
   final _contact = TextEditingController();
   final _societe = TextEditingController();
-  final _objet = TextEditingController();
+  String? _selectedObjectif; // Variable pour stocker la sélection du dropdown
+
+  // Liste des options pour l'objet de visite
+  final List<String> _objectifs = [
+    'Stage',
+    'Visite',
+    'Rendez-vous',
+    'Formation',
+    'Réunion',
+    'Autre'
+  ];
 
   @override
   void initState() {
     super.initState();
     // If QR carried a value, prefill the first field as an example.
     if (widget.scannedValue != null && widget.scannedValue!.isNotEmpty) {
-      _objet.text = widget.scannedValue!;
+      _societe.text = widget.scannedValue!; // Pré-remplir le champ société avec la valeur scannée
     }
   }
 
@@ -32,7 +42,6 @@ class _FormScreenState extends State<FormScreen> {
     _prenom.dispose();
     _contact.dispose();
     _societe.dispose();
-    _objet.dispose();
     super.dispose();
   }
 
@@ -130,10 +139,25 @@ class _FormScreenState extends State<FormScreen> {
                     validator: (v) => (v == null || v.trim().isEmpty) ? 'Champ requis' : null,
                   ),
                   _label(context, 'Objet de visite', required: true),
-                  TextFormField(
-                    controller: _objet,
-                    decoration: const InputDecoration(),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Champ requis' : null,
+                  DropdownButtonFormField<String>(
+                    value: _selectedObjectif,
+                    decoration: const InputDecoration(
+                      border: UnderlineInputBorder(),
+                      contentPadding: EdgeInsets.symmetric(vertical: 8),
+                    ),
+                    hint: const Text('Sélectionnez un objectif'),
+                    items: _objectifs.map((String objectif) {
+                      return DropdownMenuItem<String>(
+                        value: objectif,
+                        child: Text(objectif),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedObjectif = newValue;
+                      });
+                    },
+                    validator: (value) => value == null ? 'Veuillez sélectionner un objectif' : null,
                   ),
                   const SizedBox(height: 24),
                   SizedBox(
@@ -146,7 +170,7 @@ class _FormScreenState extends State<FormScreen> {
                             'prenom': _prenom.text,
                             'contact': _contact.text,
                             'societe': _societe.text,
-                            'objet': _objet.text,
+                            'objet': _selectedObjectif ?? '',
                           });
                         }
                       },
@@ -160,7 +184,7 @@ class _FormScreenState extends State<FormScreen> {
                         ),
                       ),
                       child: Text(
-                        'Confirmer que',
+                        'Confirmer',
                         style: text.titleMedium?.copyWith(
                           fontFamily: 'Oleo Script Swash Caps',
                           fontSize: 20,

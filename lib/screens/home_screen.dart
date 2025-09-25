@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'historique_screen.dart';
+import 'profile_screen.dart';
 import '../widgets/reusable_bottom_navbar.dart';
 
 /// HomeScreen with bottom navigation styled per interface mock
@@ -43,6 +44,27 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  Widget _buildAnimatedCorner(double width, double height, {
+    bool isTopRight = false,
+    bool isBottomLeft = false,
+    bool isBottomRight = false,
+  }) {
+    final scheme = Theme.of(context).colorScheme;
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: scheme.primary,
+        borderRadius: BorderRadius.only(
+          topLeft: isBottomRight ? Radius.zero : const Radius.circular(8),
+          topRight: isBottomLeft ? Radius.zero : const Radius.circular(8),
+          bottomLeft: isTopRight ? Radius.zero : const Radius.circular(8),
+          bottomRight: isBottomRight ? Radius.zero : const Radius.circular(8),
+        ),
+      ),
+    );
+  }
+
   Widget buildScannerBody() {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
@@ -63,66 +85,165 @@ class _HomeScreenState extends State<HomeScreen> {
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
-            // Real scanner view
+            // Enhanced scanner view
             Expanded(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(16),
-                child: Stack(
-                  children: [
-                    MobileScanner(
-                      controller: _scannerController,
-                      onDetect: (capture) {
-                        final codes = capture.barcodes;
-                        if (codes.isNotEmpty && !_navigatingToForm) {
-                          final value = codes.first.displayValue ?? codes.first.rawValue ?? '';
-                          setState(() => _lastBarcode = codes.first);
-                          _navigatingToForm = true;
-                          _scannerController.stop();
-                          _isScanning = false;
-                          // Add to history
-                          setState(() {
-                            _historyItems.insert(0, {
-                              'date': DateTime.now().toString().substring(0, 16),
-                              'content': 'QR Code scanné: $value',
-                              'type': 'QR Scan'
-                            });
-                          });
-                          if (mounted) {
-                            Navigator.of(context).pushNamed(
-                              '/form',
-                              arguments: value,
-                            ).then((result) {
-                              // Handle form submission result
-                              if (result != null && result is Map<String, String>) {
-                                setState(() {
-                                  _historyItems.insert(0, {
-                                    'date': DateTime.now().toString().substring(0, 16),
-                                    'content': 'Formulaire soumis: ${result['nom']}, ${result['objet']}',
-                                    'type': 'Form Submission'
-                                  });
-                                });
-                              }
-                              // Allow scanning again when returning
-                              _navigatingToForm = false;
-                            });
-                          }
-                        }
-                      },
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: scheme.shadow.withOpacity(0.3),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
                     ),
-                    // Simple focus frame overlay
-                    IgnorePointer(
-                      child: Center(
-                        child: Container(
-                          width: 220,
-                          height: 220,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: scheme.onSurface, width: 3),
+                  ],
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Stack(
+                    children: [
+                      MobileScanner(
+                        controller: _scannerController,
+                        onDetect: (capture) {
+                          final codes = capture.barcodes;
+                          if (codes.isNotEmpty && !_navigatingToForm) {
+                            final value = codes.first.displayValue ?? codes.first.rawValue ?? '';
+                            setState(() => _lastBarcode = codes.first);
+                            _navigatingToForm = true;
+                            _scannerController.stop();
+                            _isScanning = false;
+                            setState(() {
+                              _historyItems.insert(0, {
+                                'date': DateTime.now().toString().substring(0, 16),
+                                'content': 'QR Code scanné: $value',
+                                'type': 'QR Scan'
+                              });
+                            });
+                            if (mounted) {
+                              Navigator.of(context).pushNamed(
+                                '/form',
+                                arguments: value,
+                              ).then((result) {
+                                if (result != null && result is Map<String, String>) {
+                                  setState(() {
+                                    _historyItems.insert(0, {
+                                      'date': DateTime.now().toString().substring(0, 16),
+                                      'content': 'Formulaire soumis: ${result['nom']}, ${result['objet']}',
+                                      'type': 'Form Submission'
+                                    });
+                                  });
+                                }
+                                _navigatingToForm = false;
+                              });
+                            }
+                          }
+                        },
+                      ),
+
+                      // Enhanced focus frame
+                      IgnorePointer(
+                        child: Center(
+                          child: Container(
+                            width: 240,
+                            height: 240,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: _isScanning ? scheme.primary : scheme.onSurface.withOpacity(0.5),
+                                width: _isScanning ? 4 : 3,
+                              ),
+                              boxShadow: _isScanning ? [
+                                BoxShadow(
+                                  color: scheme.primary.withOpacity(0.3),
+                                  blurRadius: 15,
+                                  spreadRadius: 2,
+                                ),
+                              ] : null,
+                            ),
+                            child: Stack(
+                              children: [
+                                if (_isScanning) ...[
+                                  Positioned(
+                                    top: 0,
+                                    left: 0,
+                                    child: _buildAnimatedCorner(20, 20),
+                                  ),
+                                  Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: _buildAnimatedCorner(20, 20, isTopRight: true),
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    left: 0,
+                                    child: _buildAnimatedCorner(20, 20, isBottomLeft: true),
+                                  ),
+                                  Positioned(
+                                    bottom: 0,
+                                    right: 0,
+                                    child: _buildAnimatedCorner(20, 20, isBottomRight: true),
+                                  ),
+                                ],
+
+                                if (_isScanning)
+                                  Center(
+                                    child: Container(
+                                      width: 200,
+                                      height: 2,
+                                      decoration: BoxDecoration(
+                                        color: scheme.primary,
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: scheme.primary.withOpacity(0.5),
+                                            blurRadius: 8,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+
+                      // Status indicator
+                      if (_isScanning)
+                        Positioned(
+                          top: 20,
+                          right: 20,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: scheme.primary.withOpacity(0.9),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: scheme.onPrimary,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Scanning...',
+                                  style: text.bodySmall?.copyWith(
+                                    color: scheme.onPrimary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -187,7 +308,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            // Test button to open the form screen directly without scanning
             SizedBox(
               width: 260,
               child: OutlinedButton(
@@ -207,6 +327,22 @@ class _HomeScreenState extends State<HomeScreen> {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
 
+    // Titre dynamique selon l'écran sélectionné
+    String getAppBarTitle() {
+      switch (_index) {
+        case 0:
+          return 'Scanner';
+        case 1:
+          return 'Historique';
+        case 2:
+          return 'Favoris';
+        case 3:
+          return 'Profil';
+        default:
+          return 'Akoele';
+      }
+    }
+
     Widget body;
     switch (_index) {
       case 0:
@@ -220,7 +356,7 @@ class _HomeScreenState extends State<HomeScreen> {
         break;
       case 3:
       default:
-        body = const Center(child: Text('Profil'));
+        body = const ProfileScreen();
     }
 
     return Scaffold(
@@ -229,7 +365,7 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: scheme.primary,
         foregroundColor: scheme.onPrimary,
         title: Text(
-          'Akoele',
+          getAppBarTitle(),
           style: text.headlineLarge?.copyWith(
             fontFamily: 'Oleo Script Swash Caps',
             color: scheme.onPrimary,

@@ -38,17 +38,6 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
     final scheme = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: scheme.primary,
-        foregroundColor: scheme.onPrimary,
-        centerTitle: true,
-        title: Text(
-          'Historique',
-          style: text.headlineSmall?.copyWith(
-            fontFamily: 'Oleo Script Swash Caps',
-          ),
-        ),
-      ),
       body: SafeArea(
         child: widget.historyItems.isEmpty
             ? Center(

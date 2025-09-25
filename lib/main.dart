@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
       theme: AppTheme.light,
       darkTheme: AppTheme.dark,
       themeMode: ThemeMode.system,
+      debugShowCheckedModeBanner: false, // Masquer la bannière DEBUG
       // Use named routes for clearer navigation and to avoid dead code warnings
       initialRoute: isLoggedIn ? '/home' : '/login',
       routes: {
