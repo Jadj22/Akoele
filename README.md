@@ -1,6 +1,6 @@
-# 📲 AkoeleApp
+# 📲 Akoele
 
-**AkoeleApp** est une solution numérique innovante de **gestion des visiteurs** destinée aux entreprises, organisations et institutions.  
+**Akoele** est une solution numérique innovante de **gestion des visiteurs** destinée aux entreprises, organisations et institutions.  
 Elle repose sur deux applications complémentaires :  
 
 - **Application Visiteur** : inscription, scan des QR Codes (entrée/sortie), consultation de l’historique, export & partage, interaction avec l’hôte.  
